@@ -5,6 +5,42 @@
 
 const Render = (() => {
 
+  // ── LOGIN SCREEN ─────────────────────────────────
+
+  function showLogin() {
+    const app       = document.getElementById('app-shell');
+    const loginPage = document.getElementById('login-page');
+    if (app)       app.classList.add('hidden');
+    if (loginPage) loginPage.classList.remove('hidden');
+  }
+
+  function showApp(user) {
+    const app       = document.getElementById('app-shell');
+    const loginPage = document.getElementById('login-page');
+    if (app)       app.classList.remove('hidden');
+    if (loginPage) loginPage.classList.add('hidden');
+
+    // Show user name in topbar
+    const userDisplay = document.getElementById('userDisplay');
+    if (userDisplay) {
+      userDisplay.textContent = user.displayName || user.username;
+    }
+
+    // Populate the transaction form's User dropdown with current user + Shared Household
+    const formUser = document.getElementById('formUser');
+    if (formUser) {
+      const currentVal = formUser.value;
+      formUser.innerHTML = `
+        <option value="${escAttr(user.username)}">${esc(user.displayName || user.username)}</option>
+        <option value="Shared Household">Shared Household</option>
+      `;
+      // Preserve previous selection if still valid
+      if (currentVal === 'Shared Household' || currentVal === user.username) {
+        formUser.value = currentVal;
+      }
+    }
+  }
+
   // ── DASHBOARD ────────────────────────────────────
 
   function dashboard() {
@@ -15,14 +51,12 @@ const Render = (() => {
     const goalP   = Store.totalGoalProgress();
     const upcoming = Store.upcomingBillsCount();
 
-    // Stat cards
     setHTML('dash-income',  fmtMoney(income));
     setHTML('dash-expense', fmtMoney(expense));
     setHTML('dash-balance', fmtMoney(net));
     setHTML('dash-bills',   upcoming);
     setHTML('dash-goals',   `${goalP.pct}%`);
 
-    // Balance card class
     const balCard = document.getElementById('dash-balance');
     if (balCard) {
       balCard.className = 'stat-value';
@@ -30,7 +64,6 @@ const Render = (() => {
       else if (net < 0) balCard.classList.add('amount-negative');
     }
 
-    // Recent transactions
     const recent = Store.recentTransactions(5);
     const tbody = document.getElementById('dashRecentTbody');
     if (tbody) {
@@ -41,7 +74,6 @@ const Render = (() => {
       }
     }
 
-    // Upcoming bills
     const billsDiv = document.getElementById('dashUpcomingBills');
     if (billsDiv) {
       const today = new Date().getDate();
@@ -71,7 +103,6 @@ const Render = (() => {
 
     let list = Store.state.transactions;
 
-    // Apply search filter
     if (filterText) {
       const q = filterText.toLowerCase();
       list = list.filter(t =>
@@ -87,7 +118,6 @@ const Render = (() => {
       return;
     }
 
-    // Sort newest first
     list = [...list].sort((a, b) => (b.Date || '').localeCompare(a.Date || ''));
 
     tbody.innerHTML = list.map(t => transactionRow(t)).join('');
@@ -163,9 +193,7 @@ const Render = (() => {
             </div>
           </div>
           <div style="display:flex;gap:.5rem;margin-top:.5rem;">
-            <button onclick="App.contributeToGoal('${esc(g.GoalName)}')" class="btn btn-primary btn-sm">
-              + Add Funds
-            </button>
+            <button onclick="App.contributeToGoal('${esc(g.GoalName)}')" class="btn btn-primary btn-sm">+ Add Funds</button>
             <button onclick="App.editGoal('${esc(g.GoalName)}')" class="btn btn-ghost btn-icon btn-sm" title="Edit">
               <span class="material-symbols-outlined" style="font-size:1rem;">edit</span>
             </button>
@@ -196,10 +224,27 @@ const Render = (() => {
     }
   }
 
+  // ── LOGIN ERROR ──────────────────────────────────
+
+  function loginError(message) {
+    const el = document.getElementById('loginError');
+    if (el) {
+      el.textContent = message;
+      el.classList.remove('hidden');
+    }
+  }
+
+  function clearLoginError() {
+    const el = document.getElementById('loginError');
+    if (el) {
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  }
+
   // ── TOAST NOTIFICATION ───────────────────────────
 
   function toast(message, type = 'success') {
-    // Remove existing toasts
     document.querySelectorAll('.toast').forEach(t => t.remove());
 
     const el = document.createElement('div');
@@ -207,7 +252,6 @@ const Render = (() => {
     el.textContent = message;
     document.body.appendChild(el);
 
-    // Auto-remove after animation
     setTimeout(() => el.remove(), 3000);
   }
 
@@ -232,6 +276,15 @@ const Render = (() => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function escAttr(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   function recentRow(t) {
@@ -273,12 +326,9 @@ const Render = (() => {
   }
 
   return {
-    dashboard,
-    transactions,
-    recurring,
-    goals,
-    syncBadge,
-    toast
+    showLogin, showApp,
+    dashboard, transactions, recurring, goals,
+    syncBadge, loginError, clearLoginError, toast
   };
 
 })();

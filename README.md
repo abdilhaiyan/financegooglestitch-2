@@ -4,13 +4,14 @@ A Google Sheets–backed family finance dashboard with a modern web frontend. Re
 
 ## Features
 
-- **Dashboard** — Monthly income, expenses, net balance, upcoming bills, and goal progress at a glance.
-- **Transactions** — Full CRUD with search/filter. Add, edit, and delete transactions synced to your sheet.
-- **Recurring Bills** — Manage subscriptions and regular payments with due dates and payment portal links.
-- **Family Goals** — Shared savings goals with progress bars and contribution tracking.
-- **Dark Mode** — Toggle between light and dark themes, persisted across sessions.
-- **Responsive** — Works on desktop, tablet, and mobile with a bottom nav bar.
-- **Auto-Sync** — Refreshes data every 60 seconds.
+- **🔐 Login System** — Each family member signs in with their own username + PIN. They only see their own transactions plus shared household data. Everyone can see goals and recurring bills.
+- **📊 Dashboard** — Monthly income, expenses, net balance, upcoming bills, and goal progress at a glance.
+- **💳 Transactions** — Full CRUD with search/filter. Add, edit, and delete transactions synced to your sheet.
+- **📅 Recurring Bills** — Manage subscriptions and regular payments with due dates and payment portal links.
+- **🎯 Family Goals** — Shared savings goals with progress bars and contribution tracking.
+- **🌙 Dark Mode** — Toggle between light and dark themes, persisted across sessions.
+- **📱 Responsive** — Works on desktop, tablet, and mobile with a bottom nav bar.
+- **🔄 Auto-Sync** — Refreshes data every 60 seconds.
 
 ## Project Structure
 
@@ -22,27 +23,37 @@ famfinance/
 ├── apps-script/
 │   └── Code.gs             # Google Apps Script backend (deploy this to GAS)
 ├── css/
-│   └── styles.css          # All styles (light + dark themes)
+│   └── styles.css          # All styles (light + dark themes + login page)
 ├── js/
 │   ├── config.example.js   # EXAMPLE config — copy to config.js
 │   ├── config.js           # YOUR config (gitignored — contains real endpoint URL)
-│   ├── api.js              # API layer (fetch wrapper for all backend calls)
-│   ├── state.js            # Centralised app state + computed helpers
+│   ├── api.js              # API layer (fetch wrapper + auth)
+│   ├── state.js            # Centralised app state + user session
 │   ├── render.js           # DOM rendering functions
-│   └── app.js              # Controller: navigation, modals, event handlers
+│   └── app.js              # Controller: nav, modals, auth, events
 ```
 
 ## Setup Instructions
 
 ### 1. Google Sheets Setup
 
-1. Create a new Google Sheet.
-2. Add three sheets (tabs) with these exact headers:
+Create a new Google Sheet. Add **four** sheets (tabs) with these exact headers:
+
+**Sheet: `Users`** (NEW — for login)
+
+| Username | PIN | DisplayName |
+|----------|-----|-------------|
+| abdil | 1234 | Abdil |
+| aj | 5678 | AJ |
+
+> **Important:** Username matching is case-insensitive. PINs should be 4-6 digits. Everyone uses this to sign in. Add as many rows as you have family members.
 
 **Sheet: `Transactions`**
 
 | TransactionID | Date | User | Merchant | Category | Amount | Status | Timestamp |
 |---------------|------|------|----------|----------|--------|--------|-----------|
+
+> The `User` column must match the usernames in the Users sheet (case-insensitive). Use `Shared Household` for transactions everyone should see.
 
 **Sheet: `RecurringPayments`**
 
@@ -69,7 +80,7 @@ famfinance/
    https://script.google.com/macros/s/AKfycb.../exec
    ```
 
-> ⚠️ Whenever you update `Code.gs`, you must deploy again. Use **Deploy → Manage Deployments → Edit (pencil icon) → Version: New** to update without changing the URL. Only use **New Deployment** if you want a fresh URL.
+> ⚠️ **Authorization is critical.** If you skip authorization or it expires, all POST requests (add/edit/delete) will fail silently. If things aren't working, the #1 fix is to re-deploy and re-authorize.
 
 ### 3. Configure the Frontend
 
@@ -105,20 +116,28 @@ Upload the folder to Netlify, Vercel, Firebase Hosting, or any static file serve
 
 | View | What You Can Do |
 |------|----------------|
-| **Dashboard** | See monthly stats, recent transactions, upcoming bills |
+| **Login** | Sign in with your username + PIN |
+| **Dashboard** | See your monthly stats, recent transactions, upcoming bills |
 | **Payments & Bills** | Record new transactions, add/edit/delete recurring bills, click Pay links |
-| **Transactions** | Search, edit, or delete any transaction |
-| **Family Goals** | Create goals, contribute funds, edit or delete goals |
-| **Settings** | View endpoint config and update instructions |
+| **Transactions** | Search, edit, or delete your own transactions |
+| **Family Goals** | Create goals, contribute funds, edit or delete goals (shared) |
+| **Settings** | Test backend connection, view config, troubleshoot |
+
+### How Login & Data Filtering Works
+
+- Each user signs in with their **username** and **PIN** (stored in the `Users` sheet)
+- After login, the app shows only:
+  - **Transactions** where `User` matches their username OR is "Shared Household"
+  - **Recurring bills** — visible to everyone
+  - **Family goals** — visible to everyone
+- New transactions default to the logged-in user's name
 
 ## Updating After Changes
-
-Whenever you update the code in this repo:
 
 ### Backend (`Code.gs`)
 1. Open your Google Sheet → Extensions → Apps Script
 2. Replace the code with the latest `apps-script/Code.gs`
-3. **Deploy → Manage Deployments → Edit (pencil) → Version: New → Deploy**
+3. **Deploy → Manage Deployments → Edit (pencil icon) → Version: New → Deploy**
 4. The URL stays the same — no config changes needed.
 
 ### Frontend (HTML/CSS/JS)
@@ -126,23 +145,47 @@ Whenever you update the code in this repo:
 2. GitHub Pages auto-deploys within ~1 minute
 3. If using another host, re-upload the changed files
 
-### Adding New Config
-If a new config key is added to `config.example.js`, copy it into your `config.js` manually (your `config.js` is gitignored and won't be overwritten).
+## Troubleshooting
+
+### "Error: ..." when adding/editing/deleting
+
+**This is the #1 issue.** The fix is almost always:
+
+1. Open your Google Sheet → **Extensions → Apps Script**
+2. Click **Deploy → Manage Deployments**
+3. Click the **pencil (✎)** icon next to your Web App
+4. Change **Version** to **"New"** → click **Deploy**
+5. **Authorize** when the Google popup appears
+6. Wait 30 seconds, then go to the app's **Settings** page → click **Test Connection**
+
+### Test Connection says "FAILED"
+
+| Message | Fix |
+|---------|-----|
+| "HTTP 404" | Apps Script URL is wrong — check `config.js` |
+| "not valid JSON" | Script isn't deployed as a Web App — redeploy |
+| "Script not found" | Deployment was deleted — create a New Deployment |
+
+### "Invalid username or PIN"
+
+- Check the `Users` sheet — make sure the username matches (case-insensitive) and the PIN column has the right value
+- PINs are compared as strings, so `1234` and `"1234"` both work
+
+### "Sheet 'Users' not found"
+
+The new `Users` sheet is required. Create it in your spreadsheet with columns: `Username | PIN | DisplayName`.
+
+### Data not syncing
+
+Open the Apps Script editor and check **Executions** (left sidebar) for error logs.
 
 ## Security Notes
 
-- Your Apps Script URL is in `js/config.js` which is **gitignored**. Never commit your real URL.
-- The Apps Script is deployed to execute as **you** — anyone with the URL can call it. The "Anyone" access means no Google login is required, which is why the frontend works without auth. If you need authentication, change the Apps Script access to "Anyone with Google account" and add Google Sign-In to the frontend.
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| "Loading..." never finishes | Check that `js/config.js` exists and has your real Apps Script URL |
-| POST requests fail silently | Make sure the Apps Script is deployed with "Anyone" access |
-| Data not syncing | Open the Apps Script editor and check **Executions** for error logs |
-| CORS errors | Redeploy the Apps Script — new deployments auto-enable CORS |
-| "Sheet not found" | Verify sheet tab names are exactly `Transactions`, `RecurringPayments`, `FamilyGoals` |
+- This is a **family-grade** PIN system, not enterprise authentication
+- The Apps Script is deployed with "Anyone" access — anyone with the URL can call it
+- PINs are stored in plain text in your Google Sheet — only share sheet access with trusted family members
+- Your `config.js` is gitignored — never commit your real URL to GitHub
+- For stronger security, restrict the Google Sheet's sharing to family members only
 
 ## License
 

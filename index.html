@@ -14,7 +14,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- JS -->
+  <!-- JS (config.js must load first) -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/state.js"></script>
@@ -23,374 +23,431 @@
 </head>
 <body>
 
-  <!-- ═══════════ SIDEBAR (DESKTOP) ═══════════ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <h1>FamFinance</h1>
-      <p>Live Ledger v3.0</p>
+  <!-- ═══════════ LOGIN PAGE ═══════════ -->
+  <div id="login-page" class="login-page">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="material-symbols-outlined" style="font-size:3rem;color:var(--secondary);">account_balance</span>
+        <h1>FamFinance</h1>
+        <p>Family Ledger · Sign in to continue</p>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <div id="loginError" class="login-error hidden"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginUsername">Username</label>
+          <input id="loginUsername" class="form-input login-input" type="text"
+                 placeholder="e.g. abdil" autocomplete="username" autofocus required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPin">PIN</label>
+          <input id="loginPin" class="form-input login-input" type="password"
+                 placeholder="4-digit PIN" autocomplete="current-password" maxlength="6" required>
+        </div>
+
+        <button id="loginBtn" type="submit" class="btn btn-primary login-btn">SIGN IN</button>
+      </form>
+
+      <p class="login-hint">Ask the FamFinance admin if you don't have a username &amp; PIN yet.</p>
     </div>
 
-    <nav style="flex:1;display:flex;flex-direction:column;gap:.25rem;">
-      <button data-nav="view-dashboard" class="nav-btn active">
-        <span class="material-symbols-outlined">dashboard</span>
-        <span>Dashboard</span>
-      </button>
-      <button data-nav="view-payments" class="nav-btn">
-        <span class="material-symbols-outlined">account_balance_wallet</span>
-        <span>Payments &amp; Bills</span>
-      </button>
-      <button data-nav="view-transactions" class="nav-btn">
-        <span class="material-symbols-outlined">receipt_long</span>
-        <span>Transactions</span>
-      </button>
-      <button data-nav="view-goals" class="nav-btn">
-        <span class="material-symbols-outlined">savings</span>
-        <span>Family Goals</span>
-      </button>
-      <button data-nav="view-settings" class="nav-btn">
-        <span class="material-symbols-outlined">settings</span>
-        <span>Settings</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <span style="font-size:.5625rem;color:var(--outline);letter-spacing:.08em;text-transform:uppercase;">Backend Status</span>
-      <div id="syncStatusBadge" style="font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:.25rem;margin-top:.2rem;color:var(--on-surface-variant);">
-        <span class="material-symbols-outlined" style="font-size:1rem;">sync</span> Initializing...
-      </div>
-    </div>
-  </aside>
-
-  <!-- ═══════════ MAIN CONTENT ═══════════ -->
-  <div class="main-content">
-
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <span style="font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-0.02em;">FamFinance</span>
-      <div class="topbar-actions">
-        <button id="refreshBtn" class="btn btn-outline btn-sm">
-          <span class="material-symbols-outlined" style="font-size:1rem;">refresh</span> Reload
-        </button>
-        <button id="darkModeBtn" class="btn btn-ghost btn-icon btn-sm" title="Toggle dark mode">
-          <span class="material-symbols-outlined">dark_mode</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- ════════ VIEW: DASHBOARD ════════ -->
-    <main id="view-dashboard" class="app-view active">
-      <div class="mb-2">
-        <h2 class="font-headline-lg" style="color:var(--primary);">Dashboard</h2>
-        <p class="text-muted font-body-sm">Monthly overview &amp; at-a-glance family finances.</p>
-      </div>
-
-      <!-- Stat Cards -->
-      <div class="stat-grid">
-        <div class="stat-card stat-income">
-          <div class="stat-label">Income This Month</div>
-          <div class="stat-value" id="dash-income">$0.00</div>
-          <div class="stat-sub">All positive transactions</div>
-        </div>
-        <div class="stat-card stat-expense">
-          <div class="stat-label">Expenses This Month</div>
-          <div class="stat-value" id="dash-expense">$0.00</div>
-          <div class="stat-sub">All negative transactions</div>
-        </div>
-        <div class="stat-card stat-balance">
-          <div class="stat-label">Net Balance</div>
-          <div class="stat-value" id="dash-balance">$0.00</div>
-          <div class="stat-sub">Income &minus; Expenses</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Upcoming Bills</div>
-          <div class="stat-value" id="dash-bills" style="color:var(--primary);">0</div>
-          <div class="stat-sub">Due this month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Goals Progress</div>
-          <div class="stat-value" id="dash-goals" style="color:var(--primary);">0%</div>
-          <div class="stat-sub">Across all goals</div>
-        </div>
-      </div>
-
-      <!-- Recent Transactions + Upcoming Bills -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <!-- Recent Transactions -->
-        <div class="card">
-          <h3 class="font-label-caps mb-1" style="color:var(--primary);">Recent Transactions</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Who</th>
-                  <th style="text-align:right;">Amount</th>
-                </tr>
-              </thead>
-              <tbody id="dashRecentTbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Upcoming Bills -->
-        <div class="card">
-          <h3 class="font-label-caps mb-1" style="color:var(--primary);">Upcoming Bills</h3>
-          <div id="dashUpcomingBills">
-            <p class="text-muted text-xs">Loading...</p>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- ════════ VIEW: PAYMENTS & BILLS ════════ -->
-    <main id="view-payments" class="app-view">
-      <div class="mb-2">
-        <h2 class="font-headline-lg" style="color:var(--primary);">Payments &amp; Bills</h2>
-        <p class="text-muted font-body-sm">Record transactions and manage recurring payments.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-        <!-- Left: Recurring Bills -->
-        <div class="card">
-          <h3 class="font-label-caps mb-1" style="color:var(--primary);display:flex;align-items:center;gap:.5rem;">
-            <span class="material-symbols-outlined" style="color:var(--secondary);">autorenew</span>
-            RECURRING PAYMENTS
-          </h3>
-          <div id="recurringBillsList" style="display:flex;flex-direction:column;gap:.5rem;">
-            <p class="text-muted">Loading bills...</p>
-          </div>
-
-          <!-- Add Recurring Form -->
-          <form id="recurringForm" style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--outline-variant);">
-            <h4 class="font-label-caps mb-1" style="color:var(--on-surface-variant);">ADD NEW BILL</h4>
-            <div class="form-group">
-              <label class="form-label">Bill Name</label>
-              <input id="recurringName" class="form-input" placeholder="e.g. Netflix" required>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Amount ($)</label>
-                <input id="recurringAmount" class="form-input" type="number" step="0.01" placeholder="0.00" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Due Day (1-31)</label>
-                <input id="recurringDueDate" class="form-input" type="number" min="1" max="31" placeholder="1" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Category</label>
-              <input id="recurringCategory" class="form-input" placeholder="Subscription, Rent, etc.">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Payment Link (URL)</label>
-              <input id="recurringPayLink" class="form-input" placeholder="https://...">
-            </div>
-            <button id="addRecurringBtn" type="submit" class="btn btn-primary btn-sm">ADD BILL</button>
-          </form>
-        </div>
-
-        <!-- Right: Transaction Form -->
-        <div class="card card-dark">
-          <h3 id="txnFormTitle" class="font-label-caps mb-2" style="display:flex;align-items:center;gap:.5rem;">
-            <span class="material-symbols-outlined">add_card</span>
-            RECORD NEW TRANSACTION
-          </h3>
-
-          <form id="txnForm">
-            <div class="form-group">
-              <label class="form-label">FAMILY MEMBER</label>
-              <select id="formUser" class="form-select">
-                <option value="Abdil">Abdil</option>
-                <option value="AJ">AJ</option>
-                <option value="Shared Household">Shared Household</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">MERCHANT / RECIPIENT</label>
-              <input id="formMerchant" class="form-input" placeholder="e.g. Lotus Supermarket" required>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">CATEGORY</label>
-                <select id="formCategory" class="form-select">
-                  <option>Groceries</option>
-                  <option>Utilities</option>
-                  <option>Subscription</option>
-                  <option>Salary/Income</option>
-                  <option>General</option>
-                  <option>Dining</option>
-                  <option>Transport</option>
-                  <option>Healthcare</option>
-                  <option>Education</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">AMOUNT ($)</label>
-                <input id="formAmount" class="form-input" type="number" step="0.01" placeholder="0.00" required>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">TYPE</label>
-              <select id="formType" class="form-select">
-                <option value="EXPENSE">Expense (Saved as Negative)</option>
-                <option value="INCOME">Income (Saved as Positive)</option>
-              </select>
-            </div>
-
-            <div style="display:flex;gap:.5rem;">
-              <button id="submitTxnBtn" type="submit" class="btn btn-primary" style="flex:1;background:var(--secondary);color:var(--on-secondary);">
-                POST TO GOOGLE SHEET
-              </button>
-              <button id="cancelEditBtn" type="button" class="btn btn-outline btn-sm hidden" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-
-    <!-- ════════ VIEW: TRANSACTIONS ════════ -->
-    <main id="view-transactions" class="app-view">
-      <div class="flex-between mb-2">
-        <div>
-          <h2 class="font-headline-lg" style="color:var(--primary);">Transaction Manager</h2>
-          <p class="text-muted font-body-sm">Browse, search, edit, and delete transactions.</p>
-        </div>
-        <button onclick="App.switchView('view-payments')" class="btn btn-primary btn-sm">
-          <span class="material-symbols-outlined" style="font-size:1rem;">add</span> New
-        </button>
-      </div>
-
-      <!-- Search -->
-      <div class="search-bar">
-        <span class="material-symbols-outlined">search</span>
-        <input id="txnSearch" type="text" placeholder="Search by merchant, category, user, or ID...">
-      </div>
-
-      <!-- Table -->
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Date</th>
-              <th>User</th>
-              <th>Merchant</th>
-              <th>Category</th>
-              <th style="text-align:right;">Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="txnTableBody">
-            <tr><td colspan="8" class="text-muted" style="padding:1.5rem;text-align:center;">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </main>
-
-    <!-- ════════ VIEW: FAMILY GOALS ════════ -->
-    <main id="view-goals" class="app-view">
-      <div class="mb-2">
-        <h2 class="font-headline-lg" style="color:var(--primary);">Family Goals</h2>
-        <p class="text-muted font-body-sm">Shared savings goals from the FamilyGoals sheet.</p>
-      </div>
-
-      <!-- Add Goal Form -->
-      <div class="card mb-2">
-        <h4 class="font-label-caps mb-1" style="color:var(--on-surface-variant);">CREATE NEW GOAL</h4>
-        <form id="goalForm" style="display:flex;align-items:flex-end;gap:.75rem;flex-wrap:wrap;">
-          <div class="form-group" style="flex:2;min-width:140px;">
-            <label class="form-label">Goal Name</label>
-            <input id="goalName" class="form-input" placeholder="e.g. Summer Vacation" required>
-          </div>
-          <div class="form-group" style="flex:1;min-width:100px;">
-            <label class="form-label">Target ($)</label>
-            <input id="goalTarget" class="form-input" type="number" step="0.01" placeholder="0.00" required>
-          </div>
-          <div class="form-group" style="flex:1;min-width:100px;">
-            <label class="form-label">Starting Saved ($)</label>
-            <input id="goalInitialSaved" class="form-input" type="number" step="0.01" value="0">
-          </div>
-          <div class="form-group" style="flex:1;min-width:120px;">
-            <label class="form-label">Deadline</label>
-            <input id="goalDeadline" class="form-input" type="date">
-          </div>
-          <div class="form-group" style="flex:0;min-width:100px;padding-top:1.125rem;">
-            <button id="addGoalBtn" type="submit" class="btn btn-primary btn-sm">CREATE GOAL</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Goals Grid -->
-      <div id="goalsContainer" class="goals-grid">
-        <p class="text-muted">Loading goals...</p>
-      </div>
-    </main>
-
-    <!-- ════════ VIEW: SETTINGS ════════ -->
-    <main id="view-settings" class="app-view">
-      <div class="mb-2">
-        <h2 class="font-headline-lg" style="color:var(--primary);">System Settings</h2>
-        <p class="text-muted font-body-sm">Configuration for the Google Apps Script backend connection.</p>
-      </div>
-
-      <div class="card">
-        <label class="form-label">APPS SCRIPT ENDPOINT URL</label>
-        <input id="endpointUrlInput" class="form-input font-data-mono" style="font-size:.75rem;" type="text" readonly
-               value="Set in js/config.js — edit that file to change.">
-        <p class="text-xs text-muted mt-1">
-          The endpoint URL is configured in <code>js/config.js</code>.
-          Copy <code>js/config.example.js</code> to <code>js/config.js</code> and paste your Apps Script deployment URL.
-        </p>
-      </div>
-
-      <div class="card mt-2">
-        <h3 class="font-label-caps mb-1" style="color:var(--primary);">How to Update the Backend</h3>
-        <ol style="font-size:.8125rem;color:var(--on-surface-variant);padding-left:1.25rem;line-height:1.8;">
-          <li>Open your Google Sheet</li>
-          <li>Go to <strong>Extensions &rarr; Apps Script</strong></li>
-          <li>Replace the contents of <code>Code.gs</code> with the latest from <code>apps-script/Code.gs</code></li>
-          <li>Click <strong>Deploy &rarr; New Deployment</strong> (or <strong>Manage Deployments</strong> to update existing)</li>
-          <li>Choose <strong>Web App</strong>, set <em>Execute as: Me</em>, <em>Access: Anyone</em></li>
-          <li>Copy the new URL and update <code>js/config.js</code></li>
-        </ol>
-      </div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="app-footer">
-      <span style="font-weight:700;">FAMFINANCE LEDGER v3.0</span>
-      <span>Schema Enforced · Auto-Sync</span>
-    </footer>
+    <!-- Dark mode toggle on login page too -->
+    <button id="loginDarkModeBtn" class="btn btn-ghost btn-icon login-dark-toggle" title="Toggle dark mode">
+      <span class="material-symbols-outlined">dark_mode</span>
+    </button>
   </div>
 
-  <!-- ═══════════ MOBILE BOTTOM NAV ═══════════ -->
-  <nav class="mobile-nav">
-    <button data-nav="view-dashboard" class="mobile-nav-btn active">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span>Home</span>
-    </button>
-    <button data-nav="view-payments" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">account_balance_wallet</span>
-      <span>Pay</span>
-    </button>
-    <button data-nav="view-transactions" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">receipt_long</span>
-      <span>Txns</span>
-    </button>
-    <button data-nav="view-goals" class="mobile-nav-btn">
-      <span class="material-symbols-outlined">savings</span>
-      <span>Goals</span>
-    </button>
-  </nav>
+  <!-- ═══════════ APP SHELL (hidden until login) ═══════════ -->
+  <div id="app-shell" class="hidden">
 
-  <!-- ═══════════ MODAL ═══════════ -->
+    <!-- SIDEBAR (DESKTOP) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <h1>FamFinance</h1>
+        <p>Live Ledger v3.1</p>
+      </div>
+
+      <nav style="flex:1;display:flex;flex-direction:column;gap:.25rem;">
+        <button data-nav="view-dashboard" class="nav-btn active">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Dashboard</span>
+        </button>
+        <button data-nav="view-payments" class="nav-btn">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+          <span>Payments &amp; Bills</span>
+        </button>
+        <button data-nav="view-transactions" class="nav-btn">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Transactions</span>
+        </button>
+        <button data-nav="view-goals" class="nav-btn">
+          <span class="material-symbols-outlined">savings</span>
+          <span>Family Goals</span>
+        </button>
+        <button data-nav="view-settings" class="nav-btn">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span style="font-size:.5625rem;color:var(--outline);letter-spacing:.08em;text-transform:uppercase;">Backend Status</span>
+        <div id="syncStatusBadge" style="font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:.25rem;margin-top:.2rem;color:var(--on-surface-variant);">
+          <span class="material-symbols-outlined" style="font-size:1rem;">sync</span> Initializing...
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <span style="font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-0.02em;">FamFinance</span>
+        <div class="topbar-actions">
+          <span id="userDisplay" style="font-size:.75rem;font-weight:600;color:var(--on-surface-variant);"></span>
+          <button id="refreshBtn" class="btn btn-outline btn-sm">
+            <span class="material-symbols-outlined" style="font-size:1rem;">refresh</span> Reload
+          </button>
+          <button id="darkModeBtn" class="btn btn-ghost btn-icon btn-sm" title="Toggle dark mode">
+            <span class="material-symbols-outlined">dark_mode</span>
+          </button>
+          <button id="logoutBtn" class="btn btn-ghost btn-sm" title="Sign out" style="color:var(--error);">
+            <span class="material-symbols-outlined" style="font-size:1rem;">logout</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ════════ VIEW: DASHBOARD ════════ -->
+      <main id="view-dashboard" class="app-view active">
+        <div class="mb-2">
+          <h2 class="font-headline-lg" style="color:var(--primary);">Dashboard</h2>
+          <p class="text-muted font-body-sm">Monthly overview &amp; at-a-glance family finances.</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-income">
+            <div class="stat-label">Income This Month</div>
+            <div class="stat-value" id="dash-income">$0.00</div>
+            <div class="stat-sub">All positive transactions</div>
+          </div>
+          <div class="stat-card stat-expense">
+            <div class="stat-label">Expenses This Month</div>
+            <div class="stat-value" id="dash-expense">$0.00</div>
+            <div class="stat-sub">All negative transactions</div>
+          </div>
+          <div class="stat-card stat-balance">
+            <div class="stat-label">Net Balance</div>
+            <div class="stat-value" id="dash-balance">$0.00</div>
+            <div class="stat-sub">Income &minus; Expenses</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Upcoming Bills</div>
+            <div class="stat-value" id="dash-bills" style="color:var(--primary);">0</div>
+            <div class="stat-sub">Due this month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Goals Progress</div>
+            <div class="stat-value" id="dash-goals" style="color:var(--primary);">0%</div>
+            <div class="stat-sub">Across all goals</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="card">
+            <h3 class="font-label-caps mb-1" style="color:var(--primary);">Recent Transactions</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Who</th>
+                    <th style="text-align:right;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="dashRecentTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="font-label-caps mb-1" style="color:var(--primary);">Upcoming Bills</h3>
+            <div id="dashUpcomingBills">
+              <p class="text-muted text-xs">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════ VIEW: PAYMENTS & BILLS ════════ -->
+      <main id="view-payments" class="app-view">
+        <div class="mb-2">
+          <h2 class="font-headline-lg" style="color:var(--primary);">Payments &amp; Bills</h2>
+          <p class="text-muted font-body-sm">Record transactions and manage recurring payments.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <!-- Recurring Bills -->
+          <div class="card">
+            <h3 class="font-label-caps mb-1" style="color:var(--primary);display:flex;align-items:center;gap:.5rem;">
+              <span class="material-symbols-outlined" style="color:var(--secondary);">autorenew</span>
+              RECURRING PAYMENTS
+            </h3>
+            <div id="recurringBillsList" style="display:flex;flex-direction:column;gap:.5rem;">
+              <p class="text-muted">Loading bills...</p>
+            </div>
+
+            <form id="recurringForm" style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--outline-variant);">
+              <h4 class="font-label-caps mb-1" style="color:var(--on-surface-variant);">ADD NEW BILL</h4>
+              <div class="form-group">
+                <label class="form-label">Bill Name</label>
+                <input id="recurringName" class="form-input" placeholder="e.g. Netflix" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Amount ($)</label>
+                  <input id="recurringAmount" class="form-input" type="number" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Due Day (1-31)</label>
+                  <input id="recurringDueDate" class="form-input" type="number" min="1" max="31" placeholder="1" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <input id="recurringCategory" class="form-input" placeholder="Subscription, Rent, etc.">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payment Link (URL)</label>
+                <input id="recurringPayLink" class="form-input" placeholder="https://...">
+              </div>
+              <button id="addRecurringBtn" type="submit" class="btn btn-primary btn-sm">ADD BILL</button>
+            </form>
+          </div>
+
+          <!-- Transaction Form -->
+          <div class="card card-dark">
+            <h3 id="txnFormTitle" class="font-label-caps mb-2" style="display:flex;align-items:center;gap:.5rem;">
+              <span class="material-symbols-outlined">add_card</span>
+              RECORD NEW TRANSACTION
+            </h3>
+
+            <form id="txnForm">
+              <div class="form-group">
+                <label class="form-label">FAMILY MEMBER</label>
+                <select id="formUser" class="form-select">
+                  <!-- Populated dynamically after login -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">MERCHANT / RECIPIENT</label>
+                <input id="formMerchant" class="form-input" placeholder="e.g. Lotus Supermarket" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">CATEGORY</label>
+                  <select id="formCategory" class="form-select">
+                    <option>Groceries</option>
+                    <option>Utilities</option>
+                    <option>Subscription</option>
+                    <option>Salary/Income</option>
+                    <option>General</option>
+                    <option>Dining</option>
+                    <option>Transport</option>
+                    <option>Healthcare</option>
+                    <option>Education</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">AMOUNT ($)</label>
+                  <input id="formAmount" class="form-input" type="number" step="0.01" placeholder="0.00" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">TYPE</label>
+                <select id="formType" class="form-select">
+                  <option value="EXPENSE">Expense (Saved as Negative)</option>
+                  <option value="INCOME">Income (Saved as Positive)</option>
+                </select>
+              </div>
+
+              <div style="display:flex;gap:.5rem;">
+                <button id="submitTxnBtn" type="submit" class="btn btn-primary" style="flex:1;background:var(--secondary);color:var(--on-secondary);">
+                  POST TO GOOGLE SHEET
+                </button>
+                <button id="cancelEditBtn" type="button" class="btn btn-outline btn-sm hidden" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════ VIEW: TRANSACTIONS ════════ -->
+      <main id="view-transactions" class="app-view">
+        <div class="flex-between mb-2">
+          <div>
+            <h2 class="font-headline-lg" style="color:var(--primary);">Transaction Manager</h2>
+            <p class="text-muted font-body-sm">Browse, search, edit, and delete your transactions.</p>
+          </div>
+          <button onclick="App.switchView('view-payments')" class="btn btn-primary btn-sm">
+            <span class="material-symbols-outlined" style="font-size:1rem;">add</span> New
+          </button>
+        </div>
+
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input id="txnSearch" type="text" placeholder="Search by merchant, category, user, or ID...">
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>User</th>
+                <th>Merchant</th>
+                <th>Category</th>
+                <th style="text-align:right;">Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="txnTableBody">
+              <tr><td colspan="8" class="text-muted" style="padding:1.5rem;text-align:center;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
+      <!-- ════════ VIEW: FAMILY GOALS ════════ -->
+      <main id="view-goals" class="app-view">
+        <div class="mb-2">
+          <h2 class="font-headline-lg" style="color:var(--primary);">Family Goals</h2>
+          <p class="text-muted font-body-sm">Shared savings goals — visible to everyone.</p>
+        </div>
+
+        <div class="card mb-2">
+          <h4 class="font-label-caps mb-1" style="color:var(--on-surface-variant);">CREATE NEW GOAL</h4>
+          <form id="goalForm" style="display:flex;align-items:flex-end;gap:.75rem;flex-wrap:wrap;">
+            <div class="form-group" style="flex:2;min-width:140px;">
+              <label class="form-label">Goal Name</label>
+              <input id="goalName" class="form-input" placeholder="e.g. Summer Vacation" required>
+            </div>
+            <div class="form-group" style="flex:1;min-width:100px;">
+              <label class="form-label">Target ($)</label>
+              <input id="goalTarget" class="form-input" type="number" step="0.01" placeholder="0.00" required>
+            </div>
+            <div class="form-group" style="flex:1;min-width:100px;">
+              <label class="form-label">Starting Saved ($)</label>
+              <input id="goalInitialSaved" class="form-input" type="number" step="0.01" value="0">
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px;">
+              <label class="form-label">Deadline</label>
+              <input id="goalDeadline" class="form-input" type="date">
+            </div>
+            <div class="form-group" style="flex:0;min-width:100px;padding-top:1.125rem;">
+              <button id="addGoalBtn" type="submit" class="btn btn-primary btn-sm">CREATE GOAL</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="goalsContainer" class="goals-grid">
+          <p class="text-muted">Loading goals...</p>
+        </div>
+      </main>
+
+      <!-- ════════ VIEW: SETTINGS ════════ -->
+      <main id="view-settings" class="app-view">
+        <div class="mb-2">
+          <h2 class="font-headline-lg" style="color:var(--primary);">System Settings</h2>
+          <p class="text-muted font-body-sm">Configuration &amp; diagnostics.</p>
+        </div>
+
+        <div class="card">
+          <label class="form-label">APPS SCRIPT ENDPOINT URL</label>
+          <input id="endpointUrlInput" class="form-input font-data-mono" style="font-size:.75rem;" type="text" readonly
+                 value="Set in js/config.js">
+          <p class="text-xs text-muted mt-1">
+            Edit <code>js/config.js</code> to change the backend URL. Never commit <code>config.js</code> to GitHub.
+          </p>
+        </div>
+
+        <!-- Test Connection -->
+        <div class="card mt-2">
+          <div class="flex-between">
+            <div>
+              <h3 class="font-label-caps" style="color:var(--primary);">Connection Test</h3>
+              <p class="text-xs text-muted">Verify the Apps Script backend is reachable.</p>
+            </div>
+            <button id="testConnBtn" class="btn btn-outline btn-sm">
+              <span class="material-symbols-outlined" style="font-size:1rem;">network_ping</span> Test
+            </button>
+          </div>
+          <p id="testResult" class="text-xs mt-1" style="font-weight:600;"></p>
+        </div>
+
+        <div class="card mt-2">
+          <h3 class="font-label-caps mb-1" style="color:var(--primary);">Troubleshooting: POST/PUT Failing?</h3>
+          <ol style="font-size:.8125rem;color:var(--on-surface-variant);padding-left:1.25rem;line-height:1.8;">
+            <li>Open Google Sheet &rarr; <strong>Extensions &rarr; Apps Script</strong></li>
+            <li>Click <strong>Deploy &rarr; Manage Deployments</strong></li>
+            <li>Click the <strong>pencil (✎)</strong> icon on your Web App deployment</li>
+            <li>Change Version to <strong>"New"</strong> and click <strong>Deploy</strong></li>
+            <li><strong>Authorize</strong> when prompted — this is the key step!</li>
+            <li>Wait 30 seconds, then click <strong>Test Connection</strong> above</li>
+            <li>If still failing, try <strong>Deploy &rarr; New Deployment</strong> and update <code>config.js</code> with the new URL</li>
+          </ol>
+        </div>
+
+        <div class="card mt-2">
+          <h3 class="font-label-caps mb-1" style="color:var(--primary);">How to Update the Backend</h3>
+          <ol style="font-size:.8125rem;color:var(--on-surface-variant);padding-left:1.25rem;line-height:1.8;">
+            <li>Open your Google Sheet</li>
+            <li>Go to <strong>Extensions &rarr; Apps Script</strong></li>
+            <li>Replace <code>Code.gs</code> with the latest from <code>apps-script/Code.gs</code></li>
+            <li><strong>Deploy &rarr; Manage Deployments &rarr; Edit (✎) &rarr; New Version &rarr; Deploy</strong></li>
+          </ol>
+        </div>
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="app-footer">
+        <span style="font-weight:700;">FAMFINANCE LEDGER v3.1</span>
+        <span>Schema Enforced · Auto-Sync · Auth Enabled</span>
+      </footer>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav">
+      <button data-nav="view-dashboard" class="mobile-nav-btn active">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Home</span>
+      </button>
+      <button data-nav="view-payments" class="mobile-nav-btn">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        <span>Pay</span>
+      </button>
+      <button data-nav="view-transactions" class="mobile-nav-btn">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>Txns</span>
+      </button>
+      <button data-nav="view-goals" class="mobile-nav-btn">
+        <span class="material-symbols-outlined">savings</span>
+        <span>Goals</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL -->
   <div id="modalOverlay" class="modal-overlay">
     <div class="modal">
       <h3 id="modalTitle">Edit Item</h3>

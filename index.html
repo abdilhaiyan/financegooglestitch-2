@@ -1,553 +1,461 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en" class="light">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>FamFinance - Unified Family Wealth Suite</title>
-    
-    <!-- Design System Assets -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamFinance | Master Family Ledger</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#000000",
-                        "secondary": "#0058be",
-                        "secondary-container": "#2170e4",
-                        "on-secondary-container": "#fefcff",
-                        "background": "#f7f9fb",
-                        "surface": "#f7f9fb",
-                        "surface-container": "#eceef0",
-                        "surface-container-low": "#f2f4f6",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-variant": "#e0e3e5",
-                        "outline": "#76777d",
-                        "outline-variant": "#c6c6cd",
-                        "on-surface": "#191c1e",
-                        "on-surface-variant": "#45464d",
-                        "error": "#ba1a1a"
-                    },
-                    fontFamily: {
-                        "body": ["Inter", "sans-serif"],
-                        "mono": ["JetBrains Mono", "monospace"]
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "tertiary": "#000000",
+                            "tertiary-container": "#0b1c30",
+                            "secondary-fixed-dim": "#adc6ff",
+                            "tertiary-fixed": "#d3e4fe",
+                            "tertiary-fixed-dim": "#b7c8e1",
+                            "inverse-primary": "#bec6e0",
+                            "outline": "#76777d",
+                            "inverse-on-surface": "#eff1f3",
+                            "error-container": "#ffdad6",
+                            "on-secondary-container": "#fefcff",
+                            "surface-tint": "#565e74",
+                            "background": "#f7f9fb",
+                            "surface-variant": "#e0e3e5",
+                            "error": "#ba1a1a",
+                            "on-primary": "#ffffff",
+                            "on-secondary": "#ffffff",
+                            "on-surface": "#191c1e",
+                            "outline-variant": "#c6c6cd",
+                            "secondary": "#0058be",
+                            "secondary-container": "#2170e4",
+                            "primary": "#000000",
+                            "on-surface-variant": "#45464d",
+                            "surface-container": "#eceef0",
+                            "on-background": "#191c1e",
+                            "surface-container-lowest": "#ffffff",
+                            "surface-container-low": "#f2f4f6"
+                        },
+                        "spacing": {
+                            "xl": "32px", "md": "16px", "sm": "8px", "container-max": "1280px", "lg": "24px", "xs": "4px"
+                        },
+                        "fontFamily": {
+                            "body-sm": ["Inter"], "headline-md": ["Inter"], "label-caps": ["Inter"], "body-md": ["Inter"], "data-mono": ["JetBrains Mono"], "headline-lg": ["Inter"]
+                        },
+                        "fontSize": {
+                            "body-sm": ["14px", { "lineHeight": "20px" }],
+                            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                            "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                            "body-md": ["16px", { "lineHeight": "24px" }],
+                            "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                        }
                     }
                 }
             }
-        }
+        } catch (_e) {}
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .pdf-page { aspect-ratio: 1 / 1.414; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .app-view { display: none; }
-        .app-view.active { display: block; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body min-h-screen flex flex-col md:flex-row">
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
 
     <!-- DESKTOP SIDEBAR -->
-    <aside class="hidden md:flex w-[280px] h-screen fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant flex-col gap-sm p-4 z-40">
-        <div class="mb-6 px-3">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary text-3xl">account_balance</span>
-                <h1 class="text-xl font-bold text-primary">FamFinance</h1>
-            </div>
-            <p class="text-xs uppercase tracking-wider text-on-surface-variant mt-1 font-semibold">Global Overview</p>
+    <aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-low dark:bg-tertiary-container border-r border-outline-variant flex flex-col gap-sm p-md z-40 hidden md:flex">
+        <div class="mb-xl px-md">
+            <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">FamFinance</h1>
+            <p class="font-label-caps text-label-caps text-on-surface-variant">Live Ledger v2.5</p>
         </div>
-
-        <nav class="flex-grow flex flex-col gap-1">
-            <button onclick="navigateTo('view-dashboard')" id="nav-view-dashboard" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-surface-variant text-on-surface-variant">
-                <span class="material-symbols-outlined">dashboard</span> Dashboard
+        <nav class="flex-grow flex flex-col gap-xs">
+            <button onclick="switchView('view-payments')" data-nav="view-payments" class="nav-btn flex items-center gap-md px-md py-sm bg-secondary-container text-on-secondary-container rounded-lg w-full text-left">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+                <span class="font-label-caps text-label-caps">Payments & Bills</span>
             </button>
-            <button onclick="navigateTo('view-payments')" id="nav-view-payments" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-surface-variant text-on-surface-variant">
-                <span class="material-symbols-outlined">account_balance_wallet</span> Payments
+            <button onclick="switchView('view-transactions')" data-nav="view-transactions" class="nav-btn flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-variant rounded-lg w-full text-left">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span class="font-label-caps text-label-caps">Transactions</span>
             </button>
-            <button onclick="navigateTo('view-transactions')" id="nav-view-transactions" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-surface-variant text-on-surface-variant">
-                <span class="material-symbols-outlined">receipt_long</span> Transactions
+            <button onclick="switchView('view-goals')" data-nav="view-goals" class="nav-btn flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-variant rounded-lg w-full text-left">
+                <span class="material-symbols-outlined">savings</span>
+                <span class="font-label-caps text-label-caps">Family Goals</span>
             </button>
-            <button onclick="navigateTo('view-reports')" id="nav-view-reports" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-surface-variant text-on-surface-variant">
-                <span class="material-symbols-outlined">analytics</span> Analytics & Reports
-            </button>
-            <button onclick="navigateTo('view-settings')" id="nav-view-settings" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-surface-variant text-on-surface-variant">
-                <span class="material-symbols-outlined">settings</span> Settings
+            <button onclick="switchView('view-settings')" data-nav="view-settings" class="nav-btn flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-variant rounded-lg w-full text-left">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="font-label-caps text-label-caps">Settings</span>
             </button>
         </nav>
-
-        <div class="p-3 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col gap-2">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span class="text-[11px] font-bold tracking-wider text-on-surface-variant uppercase">Google Sheets Sync</span>
-            </div>
-            <p id="last-sync-time" class="text-[10px] text-outline">Sync Status: Ready</p>
-            <button onclick="GAS_API.fetchAllData()" class="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:opacity-90 transition-opacity">
-                Manual Refresh
-            </button>
+        <div class="p-md bg-surface-container rounded-lg border border-outline-variant">
+            <span class="font-label-caps text-[10px] text-outline block">BACKEND STATUS</span>
+            <span id="syncStatusBadge" class="font-body-sm font-bold text-green-700 flex items-center gap-xs">
+                <span class="material-symbols-outlined text-[16px]">check_circle</span> Live Sync Active
+            </span>
         </div>
     </aside>
 
-    <!-- MAIN CONTENT WRAPPER -->
-    <div class="flex-grow md:ml-[280px] flex flex-col min-h-screen">
-
-        <!-- GLOBAL TOP NAV BAR -->
-        <header class="w-full h-16 sticky top-0 z-30 bg-surface-container-lowest border-b border-outline-variant px-6 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <span class="md:hidden material-symbols-outlined cursor-pointer" onclick="toggleMobileMenu()">menu</span>
-                <span id="page-title" class="text-lg font-bold text-primary">Dashboard</span>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <button onclick="GAS_API.fetchAllData()" class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold">
-                    <span class="material-symbols-outlined text-sm">sync</span>
-                    <span class="hidden sm:inline">SHEETS LIVE</span>
-                </button>
-                <span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer">notifications</span>
-                <span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer" id="theme-toggle">dark_mode</span>
-                <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
-                    <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx7oc9AhsFgyl7ii79mN6tFhKskeTe0UUQSYrmiN5vxKOPvgAQYAbiLbsb6yq0GlrK3kfQJhm9uwRD0AUPOG9XjxKC1kKbmkWsOR7om50JDVqGI2N_1lqe-zQU5KRT5g9DYcm4gASzhX6vAkVGVq7XUq4qLlmZskS-_COVLnivoa_mcABAUw-vzMptlskz0n2h-bgVZBOd3PsWbfLCuqCjS_UW9CJU3gyzkOrj0UIPyEtfuyJz2TxcBsSklab3DQx7n9v26MsKggP1" alt="Profile"/>
+    <!-- CONTENT WRAPPER -->
+    <div class="flex-grow md:ml-[280px] flex flex-col min-h-screen pb-16 md:pb-0">
+        
+        <!-- HEADER -->
+        <header class="w-full h-16 sticky top-0 z-30 bg-surface-container-lowest border-b border-outline-variant">
+            <div class="flex justify-between items-center px-lg max-w-container-max mx-auto h-full">
+                <div class="flex items-center gap-md">
+                    <span class="font-headline-md text-headline-md font-bold text-primary">FamFinance</span>
+                </div>
+                <div class="flex items-center gap-md">
+                    <button onclick="fetchSheetData()" class="flex items-center gap-xs px-sm py-1 bg-surface-container hover:bg-surface-variant border border-outline-variant rounded-lg font-label-caps text-xs">
+                        <span class="material-symbols-outlined text-[16px]">refresh</span> Reload
+                    </button>
+                    <span class="material-symbols-outlined cursor-pointer text-on-surface-variant" id="darkModeBtn">dark_mode</span>
                 </div>
             </div>
         </header>
 
-        <!-- VIEW CONTAINER -->
-        <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full pb-24 md:pb-8">
-
-            <!-- 1. DASHBOARD VIEW -->
-            <section id="view-dashboard" class="app-view active space-y-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-primary">Family Contribution Hub</h2>
-                    <p class="text-sm text-on-surface-variant">Real-time financial position across accounts and family members.</p>
+        <!-- VIEW 1: PAYMENTS & TRANSFERS -->
+        <main id="view-payments" class="app-view flex-grow p-lg max-w-container-max mx-auto w-full">
+            <div class="mb-xl">
+                <h2 class="font-headline-lg text-headline-lg text-primary mb-xs">Payments & Bills</h2>
+                <p class="font-body-md text-on-surface-variant">Record transactions and manage recurring bill payments.</p>
+            </div>
+            <div class="grid grid-cols-12 gap-lg">
+                <!-- Recurring Bills List -->
+                <div class="col-span-12 lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+                    <h3 class="font-label-caps text-label-caps text-primary mb-md flex items-center gap-sm">
+                        <span class="material-symbols-outlined text-secondary">autorenew</span>
+                        RECURRING PAYMENTS (`RecurringPayments`)
+                    </h3>
+                    <div id="recurringBillsList" class="space-y-md">
+                        <p class="text-on-surface-variant text-body-sm">Loading bills from Google Sheets...</p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl">
-                        <p class="text-xs font-bold uppercase tracking-wider text-outline">Total Balance</p>
-                        <p id="dash-total-balance" class="text-3xl font-bold font-mono text-primary mt-2">$24,850.00</p>
-                        <span class="inline-block mt-3 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">+4.2% this month</span>
-                    </div>
-                    <div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl">
-                        <p class="text-xs font-bold uppercase tracking-wider text-outline">Monthly Savings Goal</p>
-                        <p class="text-3xl font-bold font-mono text-secondary mt-2">$4,329.60 / $5,000</p>
-                        <div class="w-full bg-surface-container h-2 rounded-full mt-4 overflow-hidden">
-                            <div class="bg-secondary h-full rounded-full" style="width: 86%"></div>
+                <!-- Transaction Form -->
+                <div class="col-span-12 lg:col-span-5 bg-primary text-on-primary rounded-xl p-lg shadow-xl">
+                    <h3 class="font-label-caps text-label-caps mb-lg flex items-center gap-sm">
+                        <span class="material-symbols-outlined">add_card</span>
+                        RECORD NEW TRANSACTION
+                    </h3>
+                    <form id="txnForm" class="space-y-md">
+                        <div>
+                            <label class="block font-label-caps text-[10px] mb-xs opacity-70">FAMILY MEMBER (`User`)</label>
+                            <select id="formUser" class="w-full bg-white/10 border border-white/20 rounded-lg px-md py-sm text-white focus:ring-2 focus:ring-secondary outline-none">
+                                <option class="bg-primary text-white" value="Abdil">Abdil</option>
+                                <option class="bg-primary text-white" value="AJ">AJ</option>
+                                <option class="bg-primary text-white" value="Shared Household">Shared Household</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl">
-                        <p class="text-xs font-bold uppercase tracking-wider text-outline">Pending Actions</p>
-                        <p class="text-3xl font-bold font-mono text-error mt-2">3 Bills</p>
-                        <p class="text-xs text-on-surface-variant mt-2">Next due in 3 days (City Power & Light)</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 2. PAYMENTS & TRANSFERS VIEW -->
-            <section id="view-payments" class="app-view space-y-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-primary">Payments & Transfers</h2>
-                    <p class="text-sm text-on-surface-variant">Manage family recurring obligations and instant transfers.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- Bills List -->
-                    <div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-                        <h3 class="text-xs font-bold tracking-wider text-primary uppercase mb-4 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-secondary">autorenew</span> Recurring Bills
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 border border-outline-variant rounded-lg hover:border-secondary transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center">
-                                        <span class="material-symbols-outlined">bolt</span>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-primary">City Power & Light</h4>
-                                        <p class="text-xs text-on-surface-variant">Due in 3 days • Utilities</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-mono font-bold">$142.50</p>
-                                    <span class="text-[10px] font-bold text-error">URGENT</span>
-                                </div>
-                            </div>
+                        <div>
+                            <label class="block font-label-caps text-[10px] mb-xs opacity-70">MERCHANT / RECIPIENT (`Merchant`)</label>
+                            <input id="formMerchant" required placeholder="e.g. Lotus Supermarket" class="w-full bg-white/10 border border-white/20 rounded-lg px-md py-sm text-white placeholder-white/40 focus:ring-2 focus:ring-secondary outline-none" type="text">
                         </div>
-                    </div>
-
-                    <!-- Manual Transfer Form -->
-                    <div class="lg:col-span-4 bg-primary text-white rounded-xl p-6 shadow-xl">
-                        <h3 class="text-xs font-bold tracking-wider mb-4 flex items-center gap-2">
-                            <span class="material-symbols-outlined">send</span> MANUAL TRANSFER
-                        </h3>
-                        <form id="transfer-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-md">
                             <div>
-                                <label class="block text-[10px] uppercase font-bold opacity-70 mb-1">Recipient Name</label>
-                                <input id="tr-recipient" required class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:ring-2 focus:ring-secondary outline-none" placeholder="e.g. Sarah Miller" type="text"/>
+                                <label class="block font-label-caps text-[10px] mb-xs opacity-70">CATEGORY (`Category`)</label>
+                                <select id="formCategory" class="w-full bg-white/10 border border-white/20 rounded-lg px-md py-sm text-white focus:ring-2 focus:ring-secondary outline-none">
+                                    <option class="bg-primary text-white">Groceries</option>
+                                    <option class="bg-primary text-white">Utilities</option>
+                                    <option class="bg-primary text-white">Subscription</option>
+                                    <option class="bg-primary text-white">Salary/Income</option>
+                                    <option class="bg-primary text-white">General</option>
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase font-bold opacity-70 mb-1">Amount ($)</label>
-                                <input id="tr-amount" required step="0.01" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:ring-2 focus:ring-secondary outline-none" placeholder="0.00" type="number"/>
+                                <label class="block font-label-caps text-[10px] mb-xs opacity-70">AMOUNT ($) (`Amount`)</label>
+                                <input id="formAmount" required step="0.01" placeholder="0.00" class="w-full bg-white/10 border border-white/20 rounded-lg px-md py-sm text-white placeholder-white/40 focus:ring-2 focus:ring-secondary outline-none" type="number">
                             </div>
-                            <button type="submit" id="tr-submit-btn" class="w-full py-3 bg-secondary text-white font-bold text-xs uppercase tracking-wider rounded-lg hover:brightness-110 transition-all shadow-lg">
-                                Initiate Transfer
-                            </button>
-                        </form>
-                    </div>
+                        </div>
+                        <div>
+                            <label class="block font-label-caps text-[10px] mb-xs opacity-70">TYPE</label>
+                            <select id="formType" class="w-full bg-white/10 border border-white/20 rounded-lg px-md py-sm text-white focus:ring-2 focus:ring-secondary outline-none">
+                                <option class="bg-primary text-white" value="EXPENSE">Expense (Saved as Negative)</option>
+                                <option class="bg-primary text-white" value="INCOME">Income (Saved as Positive)</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="submitTxnBtn" class="w-full py-md bg-secondary text-on-secondary rounded-lg font-label-caps text-label-caps hover:brightness-110 transition-all shadow-lg">
+                            POST TO GOOGLE SHEET
+                        </button>
+                    </form>
                 </div>
-            </section>
+            </div>
+        </main>
 
-            <!-- 3. TRANSACTIONS MANAGER VIEW -->
-            <section id="view-transactions" class="app-view space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-primary">Transaction Manager</h2>
-                        <p class="text-sm text-on-surface-variant">Live ledger synchronized with Google Sheets.</p>
-                    </div>
-                    <button onclick="exportCSV()" class="px-4 py-2 border border-outline-variant text-secondary text-xs font-bold rounded-lg hover:bg-surface-variant">
-                        Export CSV
-                    </button>
-                </div>
-
-                <!-- Ledger Search -->
-                <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant">
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-                        <input id="tx-search-input" onkeyup="filterTransactions()" type="text" class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary outline-none text-sm" placeholder="Search merchant or category..."/>
-                    </div>
-                </div>
-
-                <!-- Live Ledger Table -->
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+        <!-- VIEW 2: TRANSACTIONS MANAGER -->
+        <main id="view-transactions" class="app-view hidden flex-grow p-lg max-w-container-max mx-auto w-full">
+            <div class="mb-lg">
+                <h2 class="font-headline-lg text-headline-lg text-primary mb-xs">Transaction Manager</h2>
+                <p class="font-body-md text-on-surface-variant">Live view of the `Transactions` sheet tab.</p>
+            </div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-outline-variant bg-surface-container-low text-[11px] font-bold text-on-surface-variant uppercase">
-                                <th class="p-4">Merchant / Note</th>
-                                <th class="p-4">Category</th>
-                                <th class="p-4">Date</th>
-                                <th class="p-4 text-right">Amount</th>
+                            <tr class="border-b border-outline-variant bg-surface-container-low text-on-surface-variant font-label-caps text-[11px]">
+                                <th class="px-md py-sm">ID</th>
+                                <th class="px-md py-sm">Date</th>
+                                <th class="px-md py-sm">User</th>
+                                <th class="px-md py-sm">Merchant</th>
+                                <th class="px-md py-sm">Category</th>
+                                <th class="px-md py-sm text-right">Amount</th>
+                                <th class="px-md py-sm">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="transaction-feed-body" class="divide-y divide-outline-variant/50 text-sm">
-                            <tr>
-                                <td colspan="4" class="p-6 text-center text-outline">Loading records from Google Sheets...</td>
-                            </tr>
+                        <tbody id="txnTableBody" class="divide-y divide-outline-variant/30">
+                            <!-- Dynamic Content -->
                         </tbody>
                     </table>
                 </div>
-            </section>
-
-            <!-- 4. ANALYTICS & REPORTS VIEW -->
-            <section id="view-reports" class="app-view space-y-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-primary">Report Center</h2>
-                    <p class="text-sm text-on-surface-variant">Configure automated reporting and Google Drive archiving.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- Controls -->
-                    <div class="lg:col-span-4 space-y-6">
-                        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 space-y-4">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-outline">Report Config</h3>
-                            <div>
-                                <label class="block text-xs font-bold uppercase mb-2">Statement Range</label>
-                                <select class="w-full border-outline-variant rounded-lg text-sm">
-                                    <option>Monthly Summary (October 2024)</option>
-                                    <option>Q4 Tax Statement</option>
-                                </select>
-                            </div>
-                            <button onclick="triggerPdfGen()" class="w-full py-3 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:opacity-90">
-                                Archive PDF to Drive
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- PDF Simulation Frame -->
-                    <div class="lg:col-span-8 bg-surface-container border border-outline-variant rounded-xl p-8 flex justify-center">
-                        <div class="pdf-page w-full max-w-[550px] bg-white p-10 flex flex-col justify-between font-body text-xs shadow-xl rounded">
-                            <div>
-                                <div class="flex justify-between items-start mb-6 border-b pb-4">
-                                    <div>
-                                        <h3 class="text-lg font-bold text-primary">FamFinance</h3>
-                                        <p class="text-[10px] text-outline uppercase tracking-wider">Wealth Report v2.4</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold">Monthly Summary</p>
-                                        <p class="text-outline">Oct 1 - Oct 31, 2024</p>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-4 mb-6 border-b pb-4">
-                                    <div>
-                                        <p class="text-[10px] text-outline uppercase">Income</p>
-                                        <p class="font-bold text-sm">$12,450.00</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-outline uppercase">Expenses</p>
-                                        <p class="font-bold text-sm text-error">-$8,120.40</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] text-outline uppercase">Net</p>
-                                        <p class="font-bold text-sm text-green-600">+$4,329.60</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-t pt-4 text-[10px] text-outline flex justify-between">
-                                <p>Automated Google Drive Sync Active</p>
-                                <p>Page 1 of 1</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. SETTINGS VIEW -->
-            <section id="view-settings" class="app-view space-y-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-primary">Settings & Customization</h2>
-                    <p class="text-sm text-on-surface-variant">Account preferences, security, and cloud integrations.</p>
-                </div>
-
-                <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 space-y-6 max-w-2xl">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-primary border-b pb-3">Google Apps Script Web App Integration</h3>
-                    <div>
-                        <label class="block text-xs font-bold uppercase mb-2">Endpoint Web App URL</label>
-                        <input id="gas-url-input" type="text" readonly class="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg font-mono text-xs text-on-surface-variant select-all" value="https://script.google.com/macros/s/AKfycbyA1DVoW4Eh_PG5byps_lWN3UyB3M82etaTdjyePcL3IBpUjtjNXzClyCfg3QGJboDjng/exec"/>
-                    </div>
-
-                    <div class="pt-4 border-t space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="font-bold text-sm">Two-Factor Authentication</p>
-                                <p class="text-xs text-on-surface-variant">Enhanced account security protocol.</p>
-                            </div>
-                            <button id="toggle-2fa-btn" onclick="toggleSwitch('toggle-2fa-btn')" class="w-12 h-6 bg-secondary rounded-full relative transition-colors">
-                                <div class="circle absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"></div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
+            </div>
         </main>
+
+        <!-- VIEW 3: FAMILY GOALS -->
+        <main id="view-goals" class="app-view hidden flex-grow p-lg max-w-container-max mx-auto w-full">
+            <div class="mb-lg">
+                <h2 class="font-headline-lg text-headline-lg text-primary mb-xs">Family Goals</h2>
+                <p class="font-body-md text-on-surface-variant">Shared savings progress from the `FamilyGoals` sheet tab.</p>
+            </div>
+            <div id="goalsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+                <!-- Dynamic Content -->
+            </div>
+        </main>
+
+        <!-- VIEW 4: SETTINGS -->
+        <main id="view-settings" class="app-view hidden flex-grow p-lg max-w-container-max mx-auto w-full">
+            <div class="mb-xl">
+                <h2 class="font-headline-lg text-headline-lg text-primary mb-base">System Settings</h2>
+                <p class="text-on-surface-variant">Connected Google Apps Script Web App Endpoint</p>
+            </div>
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+                <label class="block font-label-caps text-xs mb-xs text-on-surface-variant">APPS SCRIPT EXECUTION URL</label>
+                <input id="endpointUrlInput" class="w-full p-md bg-surface-container rounded-lg font-data-mono text-[12px] border border-outline-variant" type="text" value="https://script.google.com/macros/s/AKfycbyA1DVoW4Eh_PG5byps_lWN3UyB3M82etaTdjyePcL3IBpUjtjNXzClyCfg3QGJboDjng/exec">
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="w-full py-lg mt-auto bg-surface-container border-t border-outline-variant">
+            <div class="flex justify-between items-center px-lg max-w-container-max mx-auto">
+                <span class="font-label-caps text-label-caps text-primary">FAMFINANCE LEDGER</span>
+                <p class="text-on-surface-variant font-body-sm text-xs">Schema Enforced</p>
+            </div>
+        </footer>
     </div>
 
-    <!-- MOBILE BOTTOM NAVBAR -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center py-2 px-4 z-50">
-        <button onclick="navigateTo('view-dashboard')" class="flex flex-col items-center gap-0.5 text-on-surface-variant">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-[10px] font-bold">Hub</span>
-        </button>
-        <button onclick="navigateTo('view-payments')" class="flex flex-col items-center gap-0.5 text-on-surface-variant">
-            <span class="material-symbols-outlined">account_balance_wallet</span>
-            <span class="text-[10px] font-bold">Pay</span>
-        </button>
-        <button onclick="navigateTo('view-transactions')" class="flex flex-col items-center gap-0.5 text-on-surface-variant">
-            <span class="material-symbols-outlined">receipt_long</span>
-            <span class="text-[10px] font-bold">Ledger</span>
-        </button>
-        <button onclick="navigateTo('view-settings')" class="flex flex-col items-center gap-0.5 text-on-surface-variant">
-            <span class="material-symbols-outlined">settings</span>
-            <span class="text-[10px] font-bold">Menu</span>
-        </button>
-    </nav>
-
-    <!-- CORE SYSTEM SCRIPT -->
+    <!-- SCRIPT ENGINE -->
     <script>
-        // CONFIGURATION & ENDPOINT BINDING
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyA1DVoW4Eh_PG5byps_lWN3UyB3M82etaTdjyePcL3IBpUjtjNXzClyCfg3QGJboDjng/exec";
-        
-        let state = {
-            transactions: [],
-            activeView: 'view-dashboard'
-        };
+        let appState = { transactions: [], recurring: [], goals: [] };
 
-        // NAVIGATION ENGINE
-        function navigateTo(viewId) {
-            document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
-                btn.classList.add('text-on-surface-variant');
-            });
+        function getEndpoint() {
+            return document.getElementById('endpointUrlInput').value.trim();
+        }
 
-            const targetView = document.getElementById(viewId);
-            if (targetView) {
-                targetView.classList.add('active');
-                state.activeView = viewId;
-                
-                // Update nav button state
-                const activeNavBtn = document.getElementById(`nav-${viewId}`);
-                if (activeNavBtn) {
-                    activeNavBtn.classList.add('bg-secondary-container', 'text-on-secondary-container');
-                    activeNavBtn.classList.remove('text-on-surface-variant');
+        function switchView(viewId) {
+            document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId)?.classList.remove('hidden');
+
+            document.querySelectorAll('[data-nav]').forEach(btn => {
+                if (btn.getAttribute('data-nav') === viewId) {
+                    btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                    btn.classList.remove('text-on-surface-variant');
+                } else {
+                    btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                    btn.classList.add('text-on-surface-variant');
                 }
+            });
+        }
 
-                // Update page title
-                const titleMap = {
-                    'view-dashboard': 'Family Contribution Hub',
-                    'view-payments': 'Payments & Transfers',
-                    'view-transactions': 'Transaction Ledger',
-                    'view-reports': 'Report Center',
-                    'view-settings': 'System Settings'
-                };
-                document.getElementById('page-title').innerText = titleMap[viewId] || 'FamFinance';
+        async function fetchSheetData() {
+            const badge = document.getElementById('syncStatusBadge');
+            badge.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">sync</span> Syncing...`;
+            
+            try {
+                const res = await fetch(`${getEndpoint()}?action=GET_ALL`);
+                const data = await res.json();
+                if (data.result === 'success') {
+                    appState.transactions = data.transactions || [];
+                    appState.recurring = data.recurring || [];
+                    appState.goals = data.goals || [];
+                    renderAll();
+                    badge.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Live Sync Active`;
+                    badge.className = "font-body-sm font-bold text-green-700 flex items-center gap-xs";
+                }
+            } catch (err) {
+                console.warn('Network error or CORS issue:', err);
+                badge.innerHTML = `<span class="material-symbols-outlined text-[16px]">warning</span> Offline / Cache`;
+                badge.className = "font-body-sm font-bold text-yellow-700 flex items-center gap-xs";
+                renderAll();
             }
         }
 
-        // GOOGLE APPS SCRIPT API SERVICE
-        const GAS_API = {
-            async fetchAllData() {
-                const syncLabel = document.getElementById('last-sync-time');
-                syncLabel.innerText = "Syncing...";
-                
-                try {
-                    const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const result = await response.json();
-                    
-                    if (result && result.data) {
-                        state.transactions = result.data;
-                    } else if (Array.isArray(result)) {
-                        state.transactions = result;
-                    }
-                    renderTransactions(state.transactions);
-                    syncLabel.innerText = `Synced: ${new Date().toLocaleTimeString()}`;
-                } catch (error) {
-                    console.warn("GAS Endpoint Fetch Warning (Falling back to dynamic state UI):", error);
-                    // Standard fallback display data when API is initializing
-                    state.transactions = [
-                        { merchant: "Whole Foods Market", category: "Groceries", date: "Today", amount: -142.30 },
-                        { merchant: "Monthly Salary", category: "Income", date: "23 Oct", amount: 8450.00 },
-                        { merchant: "Tesla Supercharger", category: "Transport", date: "24 Oct", amount: -34.12 },
-                        { merchant: "State Farm Insurance", category: "Fixed Costs", date: "22 Oct", amount: -210.00 }
-                    ];
-                    renderTransactions(state.transactions);
-                    syncLabel.innerText = `Ready (Mock/Cached)`;
-                }
-            },
+        function renderAll() {
+            renderTransactions();
+            renderRecurring();
+            renderGoals();
+        }
 
-            async postRecord(payload) {
-                try {
-                    await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    return true;
-                } catch (err) {
-                    console.error("Failed to post payload:", err);
-                    return false;
-                }
-            }
-        };
-
-        // RENDERERS
-        function renderTransactions(data) {
-            const tbody = document.getElementById('transaction-feed-body');
+        function renderTransactions() {
+            const tbody = document.getElementById('txnTableBody');
             if (!tbody) return;
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-outline">No records found.</td></tr>`;
+            if (appState.transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-md text-center text-on-surface-variant">No transactions found in sheet.</td></tr>`;
                 return;
             }
-
-            tbody.innerHTML = data.map(item => {
-                const isIncome = item.amount > 0;
-                const formattedAmt = `${isIncome ? '+' : ''}$${Math.abs(item.amount).toFixed(2)}`;
+            tbody.innerHTML = appState.transactions.map(item => {
+                const amt = parseFloat(item.Amount || 0);
+                const isExpense = amt < 0;
                 return `
-                    <tr class="hover:bg-surface-variant/40 transition-colors">
-                        <td class="p-4 font-semibold text-primary">${item.merchant || item.description || 'General'}</td>
-                        <td class="p-4 text-on-surface-variant">${item.category || 'Uncategorized'}</td>
-                        <td class="p-4 text-outline font-mono text-xs">${item.date || 'N/A'}</td>
-                        <td class="p-4 text-right font-mono font-bold ${isIncome ? 'text-green-700' : 'text-primary'}">${formattedAmt}</td>
+                    <tr class="hover:bg-surface-variant/50 transition-colors">
+                        <td class="px-md py-md font-data-mono text-xs text-outline">${item.TransactionID || '-'}</td>
+                        <td class="px-md py-md font-data-mono text-body-sm">${item.Date || '-'}</td>
+                        <td class="px-md py-md font-semibold text-primary">${item.User || '-'}</td>
+                        <td class="px-md py-md">${item.Merchant || '-'}</td>
+                        <td class="px-md py-md text-on-surface-variant">${item.Category || '-'}</td>
+                        <td class="px-md py-md font-data-mono text-right font-bold ${isExpense ? 'text-red-600' : 'text-green-600'}">
+                            $${Math.abs(amt).toFixed(2)}
+                        </td>
+                        <td class="px-md py-md">
+                            <span class="px-sm py-[2px] bg-surface-container text-[11px] font-bold rounded-full">${item.Status || 'Settled'}</span>
+                        </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function filterTransactions() {
-            const query = document.getElementById('tx-search-input').value.toLowerCase();
-            const filtered = state.transactions.filter(t => 
-                (t.merchant && t.merchant.toLowerCase().includes(query)) ||
-                (t.category && t.category.toLowerCase().includes(query))
-            );
-            renderTransactions(filtered);
+        function renderRecurring() {
+            const container = document.getElementById('recurringBillsList');
+            if (!container) return;
+            if (appState.recurring.length === 0) {
+                container.innerHTML = `<p class="text-on-surface-variant">No recurring payments found in sheet.</p>`;
+                return;
+            }
+            container.innerHTML = appState.recurring.map(bill => `
+                <div class="flex items-center justify-between p-md border border-outline-variant rounded-lg">
+                    <div>
+                        <h4 class="font-bold text-primary">${bill.Name}</h4>
+                        <p class="text-body-sm text-on-surface-variant">Due Day ${bill.DueDate} • ${bill.Category}</p>
+                    </div>
+                    <div class="flex items-center gap-md">
+                        <span class="font-data-mono font-bold">$${parseFloat(bill.Amount || 0).toFixed(2)}</span>
+                        ${bill.PayLink ? `<a href="${bill.PayLink}" target="_blank" class="px-md py-xs bg-primary text-on-primary rounded font-label-caps text-xs">Pay Portal</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function exportCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,Merchant,Category,Date,Amount\n";
-            state.transactions.forEach(t => {
-                csvContent += `"${t.merchant || ''}","${t.category || ''}","${t.date || ''}","${t.amount || 0}"\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "famfinance_transactions.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function renderGoals() {
+            const container = document.getElementById('goalsContainer');
+            if (!container) return;
+            if (appState.goals.length === 0) {
+                container.innerHTML = `<p class="text-on-surface-variant col-span-3">No family goals found in sheet.</p>`;
+                return;
+            }
+            container.innerHTML = appState.goals.map(goal => {
+                const target = parseFloat(goal.TargetAmount || 1);
+                const current = parseFloat(goal.CurrentSaved || 0);
+                const pct = Math.min(100, Math.round((current / target) * 100));
+                return `
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-sm">
+                                <h3 class="font-bold text-headline-md text-primary">${goal.GoalName}</h3>
+                                <span class="font-data-mono text-xs text-outline">Deadline: ${goal.Deadline || 'N/A'}</span>
+                            </div>
+                            <div class="w-full bg-surface-container rounded-full h-3 mb-md overflow-hidden">
+                                <div class="bg-secondary h-3 rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end mt-md">
+                            <div>
+                                <p class="font-label-caps text-[10px] text-on-surface-variant">SAVED / TARGET</p>
+                                <p class="font-data-mono font-bold">$${current.toFixed(2)} / $${target.toFixed(2)}</p>
+                            </div>
+                            <button onclick="contributeToGoal('${goal.GoalName}')" class="px-md py-xs border border-primary rounded font-label-caps text-xs hover:bg-surface-container">
+                                + Add Funds
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // FORM HANDLERS
-        document.getElementById('transfer-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('tr-submit-btn');
-            const recipient = document.getElementById('tr-recipient').value;
-            const amount = parseFloat(document.getElementById('tr-amount').value);
+        async function contributeToGoal(goalName) {
+            const amtStr = prompt(`Enter contribution amount for "${goalName}":`);
+            if (!amtStr || isNaN(amtStr)) return;
+            const amt = parseFloat(amtStr);
 
-            btn.innerText = "PROCESSING...";
-            btn.disabled = true;
-
-            const newRecord = {
-                merchant: `Transfer to ${recipient}`,
-                category: 'Transfer',
-                date: 'Just Now',
-                amount: -amount
-            };
-
-            await GAS_API.postRecord(newRecord);
-            state.transactions.unshift(newRecord);
-            renderTransactions(state.transactions);
-
-            btn.innerText = "SUCCESSFUL";
-            btn.classList.replace('bg-secondary', 'bg-green-600');
-
-            setTimeout(() => {
-                btn.innerText = "INITIATE TRANSFER";
-                btn.classList.replace('bg-green-600', 'bg-secondary');
-                btn.disabled = false;
-                this.reset();
-            }, 1500);
-        });
-
-        // UI CONTROLS & TRUNCATED SCRIPT REPAIR
-        function toggleSwitch(btnId) {
-            const btn = document.getElementById(btnId);
-            const circle = btn.querySelector('.circle');
-            if (circle.classList.contains('translate-x-0')) {
-                circle.classList.remove('translate-x-0');
-                btn.classList.replace('bg-outline', 'bg-secondary');
-            } else {
-                circle.classList.add('translate-x-0');
-                btn.classList.replace('bg-secondary', 'bg-outline');
+            try {
+                await fetch(getEndpoint(), {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'UPDATE_GOAL',
+                        goalName: goalName,
+                        contributionAmount: amt
+                    })
+                });
+                alert('Savings contribution sent to Google Sheets!');
+                setTimeout(fetchSheetData, 1200);
+            } catch (err) {
+                alert('Failed to update goal: ' + err.toString());
             }
         }
 
-        function triggerPdfGen() {
-            alert("Report generated successfully. PDF copy archived to default Google Drive folder: /FamFinance/Reports/2024");
-        }
+        document.getElementById('txnForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitTxnBtn');
+            btn.innerText = 'SAVING TO GOOGLE SHEET...';
+            btn.disabled = true;
 
-        // INITIALIZATION
-        document.addEventListener('DOMContentLoaded', () => {
-            navigateTo('view-dashboard');
-            GAS_API.fetchAllData();
+            const payload = {
+                action: 'ADD_TRANSACTION',
+                user: document.getElementById('formUser').value,
+                merchant: document.getElementById('formMerchant').value,
+                category: document.getElementById('formCategory').value,
+                amount: document.getElementById('formAmount').value,
+                type: document.getElementById('formType').value,
+                status: 'Settled',
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            try {
+                await fetch(getEndpoint(), {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                btn.innerText = 'SUCCESS!';
+                btn.classList.replace('bg-secondary', 'bg-green-600');
+                
+                setTimeout(() => {
+                    btn.innerText = 'POST TO GOOGLE SHEET';
+                    btn.classList.replace('bg-green-600', 'bg-secondary');
+                    btn.disabled = false;
+                    this.reset();
+                    fetchSheetData();
+                }, 1500);
+            } catch (err) {
+                alert('Error submitting transaction: ' + err.toString());
+                btn.disabled = false;
+                btn.innerText = 'POST TO GOOGLE SHEET';
+            }
         });
+
+        document.getElementById('darkModeBtn')?.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // Initial Load
+        fetchSheetData();
     </script>
 </body>
 </html>

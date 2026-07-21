@@ -1,6 +1,6 @@
 /**
  * FamFinance — Application State
- * Centralised data store + computed helpers.
+ * Centralised data store + computed helpers + user session.
  */
 
 const Store = (() => {
@@ -10,10 +10,47 @@ const Store = (() => {
     recurring: [],
     goals: [],
     loading: false,
-    lastError: null
+    lastError: null,
+    // Auth
+    currentUser: null,     // { username, displayName } or null
+    isLoggedIn: false
   };
 
-  /** Replace all data from a GET_ALL response */
+  // ── AUTH ──────────────────────────────────────────
+
+  function login(user) {
+    state.currentUser = user;
+    state.isLoggedIn = true;
+    sessionStorage.setItem('famfinance-user', JSON.stringify(user));
+  }
+
+  function logout() {
+    state.currentUser = null;
+    state.isLoggedIn = false;
+    state.transactions = [];
+    state.recurring = [];
+    state.goals = [];
+    sessionStorage.removeItem('famfinance-user');
+  }
+
+  /** Restore session from sessionStorage on page load */
+  function restoreSession() {
+    const raw = sessionStorage.getItem('famfinance-user');
+    if (raw) {
+      try {
+        const user = JSON.parse(raw);
+        if (user && user.username) {
+          state.currentUser = user;
+          state.isLoggedIn = true;
+          return true;
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
+  // ── DATA ──────────────────────────────────────────
+
   function setAll(data) {
     state.transactions = Array.isArray(data.transactions) ? data.transactions : [];
     state.recurring    = Array.isArray(data.recurring)    ? data.recurring    : [];
@@ -22,26 +59,22 @@ const Store = (() => {
 
   // ── COMPUTED HELPERS ────────────────────────────
 
-  /** Total income (positive amounts) */
   function totalIncome() {
     return state.transactions
       .filter(t => parseFloat(t.Amount) > 0)
       .reduce((sum, t) => sum + parseFloat(t.Amount), 0);
   }
 
-  /** Total expenses (negative amounts, absolute) */
   function totalExpenses() {
     return state.transactions
       .filter(t => parseFloat(t.Amount) < 0)
       .reduce((sum, t) => sum + Math.abs(parseFloat(t.Amount)), 0);
   }
 
-  /** Net balance */
   function netBalance() {
     return state.transactions.reduce((sum, t) => sum + parseFloat(t.Amount || 0), 0);
   }
 
-  /** Income this month */
   function incomeThisMonth() {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -53,7 +86,6 @@ const Store = (() => {
       .reduce((sum, t) => sum + parseFloat(t.Amount), 0);
   }
 
-  /** Expenses this month (absolute) */
   function expensesThisMonth() {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -65,12 +97,10 @@ const Store = (() => {
       .reduce((sum, t) => sum + Math.abs(parseFloat(t.Amount)), 0);
   }
 
-  /** Net this month */
   function netThisMonth() {
     return incomeThisMonth() - expensesThisMonth();
   }
 
-  /** Upcoming bills count (due date >= today's day of month) */
   function upcomingBillsCount() {
     const today = new Date().getDate();
     return state.recurring.filter(b => {
@@ -79,19 +109,16 @@ const Store = (() => {
     }).length;
   }
 
-  /** Total recurring monthly cost */
   function totalRecurringCost() {
     return state.recurring.reduce((sum, b) => sum + parseFloat(b.Amount || 0), 0);
   }
 
-  /** Total goals progress */
   function totalGoalProgress() {
     const totalTarget = state.goals.reduce((s, g) => s + parseFloat(g.TargetAmount || 0), 0);
     const totalSaved  = state.goals.reduce((s, g) => s + parseFloat(g.CurrentSaved || 0), 0);
     return { target: totalTarget, saved: totalSaved, pct: totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0 };
   }
 
-  /** Recent N transactions */
   function recentTransactions(n = 5) {
     return [...state.transactions]
       .sort((a, b) => {
@@ -104,6 +131,7 @@ const Store = (() => {
 
   return {
     state,
+    login, logout, restoreSession,
     setAll,
     totalIncome, totalExpenses, netBalance,
     incomeThisMonth, expensesThisMonth, netThisMonth,

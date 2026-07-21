@@ -6,7 +6,6 @@
 const API = (() => {
 
   function getEndpoint() {
-    // Falls back to the config.example value if config.js is missing
     if (typeof FAMFINANCE_CONFIG !== 'undefined' && FAMFINANCE_CONFIG.endpoint) {
       return FAMFINANCE_CONFIG.endpoint;
     }
@@ -14,9 +13,15 @@ const API = (() => {
     return 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
   }
 
-  /**
-   * Generic POST helper. Returns parsed JSON or throws.
-   */
+  /** Returns the logged-in username, or null */
+  function currentUsername() {
+    const user = sessionStorage.getItem('famfinance-user');
+    if (user) {
+      try { return JSON.parse(user).username; } catch (_) {}
+    }
+    return null;
+  }
+
   async function post(payload) {
     const res = await fetch(getEndpoint(), {
       method: 'POST',
@@ -24,11 +29,18 @@ const API = (() => {
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    // Google Apps Script sometimes returns opaque errors — try to get JSON
+    let data;
+    try {
+      data = await res.json();
+    } catch (_) {
+      throw new Error(
+        'The backend did not return valid JSON. This usually means:\n' +
+        '• The Apps Script is not deployed as a Web App\n' +
+        '• Or the deployment URL in js/config.js is wrong\n' +
+        '• Go to Settings → check your URL, then try "Test Connection"'
+      );
     }
-
-    const data = await res.json();
 
     if (data.result === 'error') {
       throw new Error(data.error || 'Unknown server error.');
@@ -37,10 +49,11 @@ const API = (() => {
     return data;
   }
 
-  /**
-   * Generic GET helper.
-   */
   async function get(params = {}) {
+    // Attach username to GET requests so backend filters transactions
+    const uname = currentUsername();
+    if (uname) params.username = uname;
+
     const url = new URL(getEndpoint());
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
@@ -52,11 +65,21 @@ const API = (() => {
     return data;
   }
 
-  // ── PUBLIC METHODS ─────────────────────────────
+  // ── AUTH ──────────────────────────────────────────
 
-  /** Fetch all data in one round-trip */
+  async function login(username, pin) {
+    return post({ action: 'LOGIN', username, pin });
+  }
+
+  // ── DATA ──────────────────────────────────────────
+
   async function fetchAll() {
     return get({ action: 'GET_ALL' });
+  }
+
+  /** Ping the backend to test connectivity (no sheet access needed) */
+  async function ping() {
+    return get({ action: 'ping' });
   }
 
   // Transactions
@@ -98,13 +121,12 @@ const API = (() => {
     return post({ action: 'DELETE_GOAL', goalName });
   }
 
-  /** Add funds to an existing goal */
   async function contributeToGoal(goalName, contributionAmount) {
     return post({ action: 'UPDATE_GOAL', goalName, contributionAmount });
   }
 
   return {
-    fetchAll,
+    login, ping, fetchAll,
     addTransaction, updateTransaction, deleteTransaction,
     addRecurring, updateRecurring, deleteRecurring,
     addGoal, updateGoal, deleteGoal,
